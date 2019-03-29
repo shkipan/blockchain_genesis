@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, ecdsa, requests, json
+import sys, ecdsa, requests, json, hashlib
 from flask import json
 from ecdsa import SigningKey, VerifyingKey
 from transaction import Transaction
@@ -17,6 +17,7 @@ class Wallet:
 			vk = SigningKey.from_string(bytes.fromhex(self.priv_key), curve=ecdsa.SECP256k1).get_verifying_key()
 			a = vk.to_string().hex()
 			self.addr = ('03' if int(a[127], 16) & 1 else '02') + a[:64]
+			self.addr = hashlib.sha256(bytes.fromhex(self.addr)).hexdigest()
 		except FileNotFoundError:
 			print ('File with private key not found')
 

@@ -24,5 +24,7 @@ def balance():
 		return jsonify({'error': 'Invalid address'}), 404
 	return jsonify({'balance': 42}), 201
 
+@app.route('')
+
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=PORT, threaded=True)
