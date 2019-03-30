@@ -1,13 +1,7 @@
 import hashlib
+from transaction import Transaction
 
 class Block:
-	heigth = 0
-	transactions = []
-	nonce = 0
-	version = 42
-	bl_hash = ''
-	prev_hash = ''
-
 	def calculate_hash(self):
 		to_hash = (
 			hex(self.version).replace('0x', '') +
@@ -15,22 +9,30 @@ class Block:
 			hex(self.heigth).replace('0x', '') +
 			self.prev_hash
 		)
-		for i in self.transactions:
+		for i in self.raw_transactions:
 			to_hash += i
 		self.bl_hash = hashlib.sha256(to_hash.encode('ascii')).hexdigest()
 
 	def __init__(self, trans, ph, hei):
+		self.version = 42
+		self.nonce = 0
 		self.heigth = hei
 		self.prev_hash = ph
+		self.raw_transactions = []
+		self.transactions = []
 		for i in trans:
-			self.transactions.append(i)
+			self.raw_transactions.append(i)
+			tr = Transaction("","", 1)
+			tr.deserialize(i)
+			self.transactions.append(tr)
 		Block.calculate_hash(self)
 
 	def display(self):
 		print ('vers', self.version)
 		print ('heig', self.heigth)
 		print ('nonc', self.nonce)
-		for i in self.transactions:
+		print ('trans count', len(self.raw_transactions))
+		for i in self.raw_transactions:
 			print ('tran', i)
 		print ('hash', self.bl_hash)
 		print ('prev_hash', self.prev_hash)
@@ -42,7 +44,7 @@ class Block:
 			'nonce': self.nonce,
 			'hash': self.bl_hash,
 			'prev_hash': self.prev_hash,
-			'transactions': self.transactions
+			'raw_transactions': self.raw_transactions
 		}
 
 class Blockchain:
@@ -65,8 +67,10 @@ class Blockchain:
 
 if __name__ == '__main__':
 	chain = Blockchain()
-	chain.add_block(['1', '2', '3'])
-	chain.add_block(['7', '6', '5'])
+	chain.add_block(['2ac5e3e47d28c55ecfb4d4b54455d0259b61679627f2091bfbbb6597a8334215630000000000000000000000000000000000000000000000000000000000000001000194a1f1a475f7f8cb82421c5661c956213664019384c1d2ceb2edf7b7d80f95d0e18729bc3632ba3274631126fadb0cbcc1ef5a4e966f2f9250d351c74b905a84'])
+	chain.add_block(['2ac5e3e47d28c55ecfb4d4b54455d0259b61679627f2091bfbbb6597a8334215630000000000000000000000000000000000000000000000000000000000000001000194a1f1a475f7f8cb82421c5661c956213664019384c1d2ceb2edf7b7d80f95d0e18729bc3632ba3274631126fadb0cbcc1ef5a4e966f2f9250d351c74b905a83'])
+	chain.add_block(['2ac5e3e47d28c55ecfb4d4b54455d0259b61679627f2091bfbbb6597a8334215630000000000000000000000000000000000000000000000000000000000000001000194a1f1a475f7f8cb82421c5661c956213664019384c1d2ceb2edf7b7d80f95d0e18729bc3632ba3274631126fadb0cbcc1ef5a4e966f2f9250d351c74b905a82'])
 	chain.display()
+
 
 

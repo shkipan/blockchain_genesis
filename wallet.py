@@ -13,7 +13,6 @@ class Wallet:
 		try:
 			f = open('key', 'r')
 			self.priv_key = f.readline().replace('\n', '')
-			print(self.priv_key)
 			vk = SigningKey.from_string(bytes.fromhex(self.priv_key), curve=ecdsa.SECP256k1).get_verifying_key()
 			a = vk.to_string().hex()
 			self.addr = ('03' if int(a[127], 16) & 1 else '02') + a[:64]
@@ -33,9 +32,24 @@ class Wallet:
 		if (not self.priv_key):
 			print ('Import your private key wiht <import> command!')
 			return
-		trans = Transaction(self.addr, addr_to, amount)
-		trans.display()
-		trans.send(self.priv_key)
+		trans = Transaction(self.addr, addr_to, amount).serialize(self.priv_key)
+		print (trans)
+
+	def broadcast(self, raw_trans):
+		if len(raw_trans) < 136:
+			print ('Invalid raw transaction')
+			return
+		try:
+			r = requests.post(
+				url = 'http://127.0.0.1:1400/broadcast', 
+				json={'transaction': raw_trans})
+		except requests.exceptions.ConnectionError:
+			print ('Unable to connect')
+			return
+		if r.status_code == 201:
+			print ('Broadcasted successfully')
+		else:
+			print ('Error', r.status_code, ':', json.loads(r.text)['error'])
 
 	def generate(self):
 		sk = SigningKey.generate(curve=ecdsa.SECP256k1)

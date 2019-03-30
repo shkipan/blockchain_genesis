@@ -13,7 +13,7 @@ class Transaction:
 		self.recipient = r
 		self.value = int(v)
 
-	def send(self, key):
+	def serialize(self, key):
 		val = hex(self.value).replace('0x', '')
 		res = (
 			hex(self.version).replace('0x', '') + 
@@ -28,16 +28,13 @@ class Transaction:
 		res_bytes = bytes.fromhex(res)
 		signature = sk.sign(res.encode('ascii'))
 		res += signature.hex()
-#		print ('signature', signature)
-		print ('raw transaction\n' + res)
-#		print ('ver', res[0:2])
-#		print ('sen', res[2:66])
-#		print ('rec', res[66:130])
-#		print ('val', int(res[130:134], 16))
-#		print ('sig', res[134:])
-#		print ('signature', bytes.fromhex(res[134:]))
-		vk = sk.get_verifying_key()
-		assert vk.verify(bytes.fromhex(res[134:]), res[:134].encode('ascii'))
+		return res
+
+	def deserialize(self, raw):
+		self.version = raw[0:2]
+		self.sender = raw[2:66]
+		self.recipient = raw[66:130]
+		self.value = int(raw[130:134], 16)
 
 	def display(self):
 		print ('Sender:', self.sender)
