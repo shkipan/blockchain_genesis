@@ -1,17 +1,24 @@
 import hashlib
 from transaction import Transaction
 
+max_nonce = 10000
+target = 1
+
 class Block:
 	def calculate_hash(self):
-		to_hash = (
-			hex(self.version).replace('0x', '') +
-			hex(self.nonce).replace('0x', '') +
-			hex(self.heigth).replace('0x', '') +
-			self.prev_hash
-		)
-		for i in self.raw_transactions:
-			to_hash += i
-		self.bl_hash = hashlib.sha256(to_hash.encode('ascii')).hexdigest()
+		for non in range(max_nonce):
+			to_hash = (
+				hex(self.version).replace('0x', '') +
+				hex(non).replace('0x', '') +
+				hex(self.heigth).replace('0x', '') +
+				self.prev_hash
+			)
+			for i in self.raw_transactions:
+				to_hash += i
+			bl_hash = hashlib.sha256(to_hash.encode('ascii')).hexdigest()
+			if bl_hash[:target] == '0' * target:
+				self.bl_hash = bl_hash
+				return			
 
 	def __init__(self, trans, ph, hei):
 		self.version = 42

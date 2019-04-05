@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import sys, ecdsa, requests, json, hashlib
 from flask import json
 from ecdsa import SigningKey, VerifyingKey
@@ -13,6 +11,9 @@ class Wallet:
 		try:
 			f = open('key', 'r')
 			self.priv_key = f.readline().replace('\n', '')
+			if len(self.priv_key) != 64:
+				print ('Invalid key in file')
+				return
 			vk = SigningKey.from_string(bytes.fromhex(self.priv_key), curve=ecdsa.SECP256k1).get_verifying_key()
 			a = vk.to_string().hex()
 			self.addr = ('03' if int(a[127], 16) & 1 else '02') + a[:64]
@@ -22,7 +23,7 @@ class Wallet:
 
 	def importing(self, key):
 		if len(key) != 64:
-			print ('Invalid key')
+			print ('Invalid key imported')
 			return
 		self.priv_key = key
 		f = open('key', 'w')
@@ -31,6 +32,16 @@ class Wallet:
 	def send(self, addr_to, amount):
 		if (not self.priv_key):
 			print ('Import your private key wiht <import> command!')
+			return
+		if len(addr_to) != 64:
+			print ('Invalid address to send!')
+			return
+		try:
+			if int(amount) <= 0:
+				print ('Amount must be a positive number')
+				return
+		except:
+			print ('Amount must be a number')
 			return
 		trans = Transaction(self.addr, addr_to, amount).serialize(self.priv_key)
 		print (trans)
