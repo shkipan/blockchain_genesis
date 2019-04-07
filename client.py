@@ -8,6 +8,7 @@ from transaction import Transaction
 PORT = 1400
 
 blockchain = Blockchain()
+blockchain.read_from_file('file')
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
