@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import flask, requests, sys
+import flask, requests, sys, json
 from flask import jsonify, request
 from block import Blockchain, Block
 from transaction import Transaction
@@ -8,7 +8,7 @@ from transaction import Transaction
 PORT = 1400
 
 blockchain = Blockchain()
-blockchain.read_from_file('file')
+blockchain.read_from_file('chain')
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -57,6 +57,8 @@ def broadcast():
 		return jsonify({'error': 'Invalid object passed'}), 404
 	trans = request.get_json()['transaction']
 	blockchain.add_block([trans])
+	with open('chain', 'w+') as f:
+		json.dump(blockchain.output_json(), f)
 	return jsonify({'success': 1}), 201
 
 @app.route('/heigth/get', methods=['GET'])
