@@ -24,10 +24,6 @@ class Transaction:
 			'0' * (4 - len(val)) +
 			val
 			)
-		sk = ecdsa.SigningKey.from_string(bytes.fromhex(key), curve=ecdsa.SECP256k1)
-		res_bytes = bytes.fromhex(res)
-		signature = sk.sign(res.encode('ascii'))
-		res += signature.hex()
 		return res
 
 	def deserialize(self, raw):

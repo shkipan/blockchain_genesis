@@ -1,4 +1,6 @@
 *.swp
+chain
+file
 key
 
 # Byte-compiled / optimized / DLL files
