@@ -1,4 +1,4 @@
-import hashlib
+import hashlib, ecdsa, binascii
 from flask import json
 from transaction import Transaction
 
@@ -74,9 +74,24 @@ class Blockchain:
 
 	def add_block(self, transacts):
 		bl = Block(transacts, self.last_hash, self.curr_heigth)
+		for i in range(len(bl.transactions)):
+			ver = ecdsa.VerifyingKey.from_string(
+				binascii.unhexlify(bl.transactions[i].verif_key),
+				curve=ecdsa.SECP256k1)
+			signature = bl.transactions[i].signature			
+			try:
+				ver.verify(
+					binascii.unhexlify(signature),
+					bytes.fromhex(bl.raw_transactions[i][:134])
+					)
+				print ('Verified')
+			except ecdsa.BadSignatureError:
+				print ('False')
+				return False
 		self.blocks.append(bl)
 		self.curr_heigth += 1
 		self.last_hash = bl.bl_hash
+		return True
 
 	def display(self):
 		print ('total_heigth', self.curr_heigth)
@@ -107,8 +122,6 @@ class Blockchain:
 					self.blocks.append(bl)
 		except FileNotFoundError:
 			print ('Invalid filename')
-		except json.decoder.JSONDecodeError:
-			print ('Invalid content of file')
 
 if __name__ == '__main__':
 	'''

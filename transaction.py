@@ -1,4 +1,4 @@
-import ecdsa
+import ecdsa, binascii
 
 coded_length = 64
 
@@ -24,6 +24,12 @@ class Transaction:
 			'0' * (4 - len(val)) +
 			val
 			)
+		sk = ecdsa.SigningKey.from_string(
+			binascii.unhexlify(key), 
+			curve=ecdsa.SECP256k1)
+		vk = binascii.hexlify(sk.get_verifying_key().to_string()).decode()
+		sig = binascii.hexlify(sk.sign(bytes.fromhex(res))).decode()
+		res += vk + sig
 		return res
 
 	def deserialize(self, raw):
@@ -31,6 +37,8 @@ class Transaction:
 		self.sender = raw[2:66]
 		self.recipient = raw[66:130]
 		self.value = int(raw[130:134], 16)
+		self.verif_key = raw[134:262]
+		self.signature = raw[262:]
 
 	def display(self):
 		print ('Sender:', self.sender)

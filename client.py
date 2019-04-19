@@ -56,7 +56,9 @@ def broadcast():
 	if not request.is_json:
 		return jsonify({'error': 'Invalid object passed'}), 404
 	trans = request.get_json()['transaction']
-	blockchain.add_block([trans])
+	res = blockchain.add_block([trans])
+	if not res:
+		return jsonify({'error': 'Transaction wasn\'t verified'}), 404
 	with open('chain', 'w+') as f:
 		json.dump(blockchain.output_json(), f)
 	return jsonify({'success': 1}), 201
