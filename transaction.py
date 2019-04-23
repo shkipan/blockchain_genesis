@@ -35,6 +35,7 @@ class Transaction:
 		return res
 
 	def deserialize(self, raw):
+		print (raw)
 		self.version = raw[0:2]
 		self.sender = raw[2:66]
 		self.recipient = raw[66:130]

@@ -63,7 +63,8 @@ class Block:
 			'nonce': self.nonce,
 			'hash': self.bl_hash,
 			'prev_hash': self.prev_hash,
-			'raw_transactions': tr
+			'transactions': tr,
+			'raw_transactions': self.raw_transactions
 		}
 
 	def from_json(self, js_data):
@@ -75,6 +76,7 @@ class Block:
 		for i in js_data['raw_transactions']:
 			self.raw_transactions.append(i)
 			tr = Transaction("","", 1)
+			print (i)
 			tr.deserialize(i)
 			self.transactions.append(tr)
 	
@@ -113,10 +115,12 @@ class Blockchain:
 			except ecdsa.BadSignatureError:
 				print ('False')
 				return False, 1
+			#'''
 			sender = bl.transactions[i].sender
-			if sender != '0' * 64 and self.get_balance(sender) < 1:
+			if self.get_balance(sender) < 1:
 				print ('Sender doesn\'t have enough money')
 				return False, 2
+			#'''
 		self.blocks.append(bl)
 		self.curr_heigth += 1
 		self.last_hash = bl.bl_hash
