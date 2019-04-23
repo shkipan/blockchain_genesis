@@ -3,9 +3,9 @@ import ecdsa, binascii
 coded_length = 64
 
 class Transaction:
-	sender = None;
-	recipient = None;
-	value = 0;
+	sender = None
+	recipient = None
+	value = 0
 	version = 42
 
 	def __init__(self, s, r, v):
@@ -35,7 +35,6 @@ class Transaction:
 		return res
 
 	def deserialize(self, raw):
-		print (raw)
 		self.version = raw[0:2]
 		self.sender = raw[2:66]
 		self.recipient = raw[66:130]

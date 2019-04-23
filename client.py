@@ -29,6 +29,10 @@ def balance():
 	bal = blockchain.get_balance(a)
 	return jsonify({'balance': bal}), 201
 
+@app.route('/chain', methods=['GET'])
+def chain():
+    return jsonify({'chain': blockchain.output_json()}), 201
+
 @app.route('/history', methods=['GET'])
 def history():
 	a = request.args.get('address')
@@ -50,7 +54,8 @@ def broadcast():
 	if not request.is_json:
 		return jsonify({'error': 'Invalid object passed'}), 404
 	trans = request.get_json()['transaction']
-	res, err_code = blockchain.add_block([trans])
+	miner = request.get_json()['miner']
+	res, err_code = blockchain.add_block([trans], miner)
 	if not res:
 		if err_code == 1:
 			return jsonify({'error': 'Transaction wasn\'t verified'}), 404

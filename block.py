@@ -19,7 +19,7 @@ class Block:
 			bl_hash = hashlib.sha256(to_hash.encode('ascii')).hexdigest()
 			if bl_hash[:target] == '0' * target:
 				self.bl_hash = bl_hash
-				return			
+				return
 
 	def __init__(self, trans, ph, hei):
 		self.version = 42
@@ -28,6 +28,8 @@ class Block:
 		self.prev_hash = ph
 		self.raw_transactions = []
 		self.transactions = []
+		self.miner = None
+		self.reward = None
 		for i in trans:
 			self.raw_transactions.append(i)
 			try:
@@ -39,11 +41,13 @@ class Block:
 			self.transactions.append(tr)
 		Block.calculate_hash(self)
 
+
 	def display(self):
 		print ('vers', self.version)
 		print ('heig', self.heigth)
 		print ('nonc', self.nonce)
 		print ('trans count', len(self.raw_transactions))
+		print ('miner', self.miner)
 		for i in self.raw_transactions:
 			print ('tran', i)
 		print ('hash', self.bl_hash)
@@ -62,6 +66,7 @@ class Block:
 			'heigth': self.heigth,
 			'nonce': self.nonce,
 			'hash': self.bl_hash,
+			'miner': self.miner,
 			'prev_hash': self.prev_hash,
 			'transactions': tr,
 			'raw_transactions': self.raw_transactions
@@ -72,17 +77,18 @@ class Block:
 		self.heigth = js_data['heigth']
 		self.nonce = js_data['nonce']
 		self.bl_hash = js_data['hash']
+		self.miner = js_data['miner']
 		self.prev_hash = js_data['prev_hash']
 		for i in js_data['raw_transactions']:
 			self.raw_transactions.append(i)
 			tr = Transaction("","", 1)
-			print (i)
 			tr.deserialize(i)
 			self.transactions.append(tr)
 	
 class Blockchain:
 	last_hash = '0' * 64
 	curr_heigth = 0
+	reward = 1000
 	blocks = []
 
 	def get_balance(self, a):
@@ -93,9 +99,11 @@ class Blockchain:
 					bal -= tr.value
 				if tr.recipient == a:
 					bal += tr.value
+			if bl.miner == a:
+				bal += self.reward
 		return (bal)
 
-	def add_block(self, transacts):
+	def add_block(self, transacts, miner):
 		try:
 			bl = Block(transacts, self.last_hash, self.curr_heigth)
 		except ValueError as err:
@@ -121,6 +129,7 @@ class Blockchain:
 				print ('Sender doesn\'t have enough money')
 				return False, 2
 			#'''
+		bl.miner = miner
 		self.blocks.append(bl)
 		self.curr_heigth += 1
 		self.last_hash = bl.bl_hash
@@ -140,7 +149,8 @@ class Blockchain:
 		return {
 			'last_hash': self.last_hash,
 			'curr_heigth': self.curr_heigth,
-			'blocks': bl_js
+			'blocks': bl_js,
+			'reward': self.reward
 		}
 
 	def read_from_file(self, filename):
@@ -155,6 +165,13 @@ class Blockchain:
 					self.blocks.append(bl)
 		except FileNotFoundError:
 			print ('Invalid filename')
+			self.add_block([], 'bddeb8a05002990fc39a84363b31e008b095e6b8e6801e6bd6c6611bc54f264d')
+			for i in self.blocks:
+				i.display()
+			with open('chain', 'w+') as f:
+				json.dump(self.output_json(), f)
+
+		
 
 if __name__ == '__main__':
 	'''

@@ -59,7 +59,11 @@ class Wallet:
 		try:
 			r = requests.post(
 				url = 'http://127.0.0.1:1400/broadcast', 
-				json={'transaction': raw_trans})
+                                json = {
+                                    'transaction': raw_trans,
+                                    'miner': 'bddeb8a05002990fc39a84363b31e008b095e6b8e6801e6bd6c6611bc54f264d'
+                                    }
+                                )
 		except requests.exceptions.ConnectionError:
 			print ('Unable to connect')
 			return
