@@ -12,6 +12,8 @@ class Transaction:
 		self.sender = s
 		self.recipient = r
 		self.value = int(v)
+		if (self.value <= 0):
+			raise ValueError('Invalid transaction value')
 
 	def serialize(self, key):
 		val = hex(self.value).replace('0x', '')

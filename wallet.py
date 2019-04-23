@@ -26,6 +26,12 @@ class Wallet:
 			print ('Invalid key imported')
 			return
 		self.priv_key = key
+		vk = SigningKey.from_string(bytes.fromhex(self.priv_key), curve=ecdsa.SECP256k1).get_verifying_key()
+		a = vk.to_string().hex()
+		self.addr = ('03' if int(a[127], 16) & 1 else '02') + a[:64]
+		self.addr = hashlib.sha256(bytes.fromhex(self.addr)).hexdigest()
+		print (self.addr, 'imported')
+
 		f = open('key', 'w')
 		f.write(key)
 
@@ -64,8 +70,12 @@ class Wallet:
 
 	def generate(self):
 		sk = SigningKey.generate(curve=ecdsa.SECP256k1)
-		self.priv_key = sk
-		print (sk.to_string().hex())
+		vk = sk.get_verifying_key()
+		a = vk.to_string().hex()
+		addr = ('03' if int(a[127], 16) & 1 else '02') + a[:64]
+		addr = hashlib.sha256(bytes.fromhex(addr)).hexdigest()
+		print ('Private key:', sk.to_string().hex())
+		print ('Address:', addr)
 
 	def balance(self, addr):
 			r = requests.get('http://127.0.0.1:1400/balance?address=' + addr)

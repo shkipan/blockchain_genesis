@@ -30,7 +30,11 @@ class Block:
 		self.transactions = []
 		for i in trans:
 			self.raw_transactions.append(i)
-			tr = Transaction("","", 1)
+			try:
+				tr = Transaction("","", 1)
+			except ValueError as err:
+				print (err.args[0])
+				raise err('Block can\'t be created')
 			tr.deserialize(i)
 			self.transactions.append(tr)
 		Block.calculate_hash(self)
@@ -46,13 +50,20 @@ class Block:
 		print ('prev_hash', self.prev_hash)
 
 	def to_json(self):
+		tr = []
+		for i in self.transactions:
+			tr.append({
+				'sender': i.sender,
+				'recipient': i.recipient,
+				'value': i.value
+			})
 		return {
 			'version': self.version,
 			'heigth': self.heigth,
 			'nonce': self.nonce,
 			'hash': self.bl_hash,
 			'prev_hash': self.prev_hash,
-			'raw_transactions': self.raw_transactions
+			'raw_transactions': tr
 		}
 
 	def from_json(self, js_data):
@@ -72,8 +83,22 @@ class Blockchain:
 	curr_heigth = 0
 	blocks = []
 
+	def get_balance(self, a):
+		bal = 0
+		for bl in self.blocks:
+			for tr in bl.transactions:
+				if tr.sender == a:
+					bal -= tr.value
+				if tr.recipient == a:
+					bal += tr.value
+		return (bal)
+
 	def add_block(self, transacts):
-		bl = Block(transacts, self.last_hash, self.curr_heigth)
+		try:
+			bl = Block(transacts, self.last_hash, self.curr_heigth)
+		except ValueError as err:
+			print (err.args[0])
+			return False
 		for i in range(len(bl.transactions)):
 			ver = ecdsa.VerifyingKey.from_string(
 				binascii.unhexlify(bl.transactions[i].verif_key),
@@ -87,11 +112,15 @@ class Blockchain:
 				print ('Verified')
 			except ecdsa.BadSignatureError:
 				print ('False')
-				return False
+				return False, 1
+			sender = bl.transactions[i].sender
+			if sender != '0' * 64 and self.get_balance(sender) < 1:
+				print ('Sender doesn\'t have enough money')
+				return False, 2
 		self.blocks.append(bl)
 		self.curr_heigth += 1
 		self.last_hash = bl.bl_hash
-		return True
+		return True, 0
 
 	def display(self):
 		print ('total_heigth', self.curr_heigth)
