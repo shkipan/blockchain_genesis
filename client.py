@@ -40,6 +40,12 @@ def history():
 		return jsonify({'error': 'Adress wasn\'t passed'}), 404
 	trans = []
 	for bl in blockchain.blocks:
+		if bl.miner == a:
+			to_app = {
+				'Miner': bl.miner,
+				'Block hash': bl.bl_hash
+			}
+			trans.append(to_app)
 		for tr in bl.transactions:
 			if tr.sender == a or tr.recipient == a:
 				to_app = {
